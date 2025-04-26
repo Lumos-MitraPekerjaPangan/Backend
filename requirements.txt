@@ -1,7 +1,16 @@
 flask
 pandas
+numpy
 joblib
 firebase-admin
 python-dotenv
 prophet
 gunicorn
+pystan
+convertdate
+holidays
+tqdm
+setuptools-git
+Cython
+pympler
+tzdata
