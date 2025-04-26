@@ -1,9 +1,6 @@
 pandas
 numpy
-matplotlib
 prophet
-seaborn
-scikit-learn
 flask
 joblib
 gunicorn
