@@ -14,18 +14,18 @@ RUN apt-get update && apt-get install -y \
 # Copy requirements file
 COPY requirements.txt .
 
-# Install dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+# Install dependencies plus waitress (production WSGI server)
+RUN pip install --no-cache-dir -r requirements.txt waitress
 
+# No need for waitress in this case
 # Copy application code
 COPY . .
 
 # Set environment variable for port
 ENV PORT=8080
 
-# Create a prestart script to check if Firebase authentication works
-RUN echo '#!/bin/bash\necho "Starting app pre-check..."\npython -c "import firebase_admin; print(\"Firebase SDK imported successfully\")"' > /app/prestart.sh && \
-    chmod +x /app/prestart.sh
+# Create a simple starter script
+RUN echo 'import os\nfrom api import app\n\nif __name__ == "__main__":\n    port = int(os.environ.get("PORT", 8080))\n    app.run(host="0.0.0.0", port=port, debug=False)' > /app/server.py
 
-# Run the prestart check and then start Gunicorn with additional parameters
-CMD /app/prestart.sh && exec gunicorn --bind :$PORT --workers 1 --threads 8 --timeout 300 --preload --log-level debug api:app
+# Run Flask directly
+CMD python /app/server.py
