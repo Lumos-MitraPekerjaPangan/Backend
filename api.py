@@ -179,6 +179,28 @@ def process_json_file(json_data, data_type):
     except Exception as e:
         raise ValueError(f"Error processing JSON: {str(e)}")
 
+def create_future_dataframe(model, periods=6):
+    """Create a future dataframe starting from next month for forecasting"""
+    current_date = datetime.now()
+    
+    # Calculate the start of next month
+    if current_date.month == 12:
+        next_month = datetime(current_date.year + 1, 1, 1)
+    else:
+        next_month = datetime(current_date.year, current_date.month + 1, 1)
+    
+    # Create a dataframe with dates starting from next month
+    future_dates = []
+    for i in range(periods):
+        month = next_month.month + i
+        year = next_month.year + (month - 1) // 12
+        month = ((month - 1) % 12) + 1
+        future_dates.append(pd.Timestamp(year=year, month=month, day=28))
+    
+    future_df = pd.DataFrame({'ds': future_dates})
+    
+    return future_df
+
 @app.route('/health', methods=['GET'])
 def health_check():
     """Endpoint to check if the API is running"""
@@ -275,12 +297,12 @@ def update_forecast(data_type):
         else:
             retraining_message = f"Used existing {data_type} model (no retraining)"
         
-        # Generate the forecast
-        future = model.make_future_dataframe(periods=6, freq='ME')
+        # Generate the forecast using the custom future dataframe
+        future = create_future_dataframe(model, periods=6)
         forecast = model.predict(future)
         
-        # Extract forecast
-        forecast_result = forecast.tail(6)
+        # No need for tail() since we're using exactly the dates we need
+        forecast_result = forecast
         
         # Create response data
         response = []
@@ -346,12 +368,12 @@ def get_forecast(data_type):
             "error": f"Model for {data_type} not found. Please train and export the model first."
         }), 404
     
-    # Create future dataframe for prediction
-    future = model.make_future_dataframe(periods=6, freq='ME')
+    # Create future dataframe for prediction using our helper
+    future = create_future_dataframe(model, periods=6)
     forecast = model.predict(future)
     
-    # Extract forecast
-    forecast_result = forecast.tail(6)
+    # No need for tail() since future_df has exactly what we need
+    forecast_result = forecast
     
     # Create response data
     response = []
@@ -409,12 +431,12 @@ def custom_forecast(data_type):
     if not isinstance(periods, int) or periods <= 0 or periods > 24:
         return jsonify({"error": "Periods must be a positive integer between 1 and 24"}), 400
     
-    # Create future dataframe for prediction
-    future = model.make_future_dataframe(periods=periods, freq='ME')
+    # Create future dataframe for prediction with our helper
+    future = create_future_dataframe(model, periods=periods)
     forecast = model.predict(future)
     
-    # Extract forecast
-    forecast_result = forecast.tail(periods)
+    # No need for tail() since future_df has exactly what we need
+    forecast_result = forecast
     
     # Create response data
     response = []
@@ -504,10 +526,10 @@ def update_all_models():
                         
                     model = new_model
                 
-                # Generate forecast
-                future = model.make_future_dataframe(periods=6, freq='ME')
+                # Generate forecast using our helper function
+                future = create_future_dataframe(model, periods=6)
                 forecast = model.predict(future)
-                forecast_result = forecast.tail(6)
+                forecast_result = forecast
                 
                 # Create response
                 response = []
