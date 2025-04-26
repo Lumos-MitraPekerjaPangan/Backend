@@ -1,7 +1,11 @@
-flask
 pandas
-joblib
+numpy
+matplotlib
 prophet
-firebase-admin
-python-dotenv
+seaborn
+scikit-learn
+flask
+joblib
 gunicorn
+python-dotenv
+firebase-admin
