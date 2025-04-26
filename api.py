@@ -26,6 +26,11 @@ db = firestore.client()
 
 app = Flask(__name__)
 
+# --- HEALTH CHECK ENDPOINT FOR CLOUD RUN ---
+@app.route('/healthz', methods=['GET'])
+def health_check():
+    return jsonify({"status": "ok"}), 200
+
 # --- UTILS ---
 
 def safe_json_load(file) -> Any:
@@ -267,5 +272,5 @@ def upload_product_forecast():
         }), 500
 
 if __name__ == '__main__':
-    port = int(os.getenv('PORT', 5000))
-    app.run(debug=False, host='0.0.0.0', port=port)
+    port = int(os.getenv('PORT', 8080))
+    app.run(host='0.0.0.0', port=port)
