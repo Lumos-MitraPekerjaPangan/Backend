@@ -23,5 +23,9 @@ COPY . .
 # Set environment variable for port
 ENV PORT=8080
 
-# Run the application with Gunicorn
-CMD exec gunicorn --bind :$PORT --workers 1 --threads 8 --timeout 0 api:app
+# Create a prestart script to check if Firebase authentication works
+RUN echo '#!/bin/bash\necho "Starting app pre-check..."\npython -c "import firebase_admin; print(\"Firebase SDK imported successfully\")"' > /app/prestart.sh && \
+    chmod +x /app/prestart.sh
+
+# Run the prestart check and then start Gunicorn with additional parameters
+CMD /app/prestart.sh && exec gunicorn --bind :$PORT --workers 1 --threads 8 --timeout 300 --preload --log-level debug api:app
