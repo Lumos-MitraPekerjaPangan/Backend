@@ -1,6 +1,6 @@
-flask
 pandas
 numpy
+<<<<<<< HEAD
 joblib
 firebase-admin
 python-dotenv
@@ -14,3 +14,14 @@ setuptools-git
 Cython
 pympler
 tzdata
+=======
+matplotlib
+prophet
+seaborn
+scikit-learn
+flask
+joblib
+gunicorn
+python-dotenv
+firebase-admin
+>>>>>>> parent of fca9e47 (cloud run)
