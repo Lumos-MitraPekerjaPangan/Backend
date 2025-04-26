@@ -20,6 +20,16 @@ steps:
       - 'asia-southeast2'
       - '--platform'
       - 'managed'
+      - '--memory'
+      - '1Gi'
+      - '--cpu'
+      - '1'
+      - '--timeout'
+      - '300s'
+      - '--concurrency'
+      - '50'
+      - '--min-instances'
+      - '1'
       - '--set-env-vars'
       - 'ENVIRONMENT=production'
       - '--set-secrets'
@@ -28,3 +38,6 @@ steps:
 
 images:
   - 'gcr.io/$PROJECT_ID/forecast-api:$COMMIT_SHA'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
