@@ -9,10 +9,11 @@ import firebase_admin
 from firebase_admin import credentials, storage, firestore
 from dotenv import load_dotenv
 from typing import Optional, Dict, Any, List
+import traceback
 
 # --- ENV & FIREBASE INIT ---
 load_dotenv()
-AUTH_TOKEN = os.getenv('authentication')
+# AUTH_TOKEN = os.getenv('authentication')
 
 cred = credentials.Certificate("hackfest-2025-7f1a4-firebase-adminsdk-fbsvc-a86f273b3e.json")
 firebase_admin.initialize_app(
@@ -117,7 +118,6 @@ def load_model_from_firebase(model_path: str):
 def upload_product_forecast():
     """
     Expects multipart/form-data:
-      - authentication
       - productId
       - productName
       - supply_data: JSON file
@@ -126,8 +126,8 @@ def upload_product_forecast():
       - bulk_price_data: JSON file
     """
     # --- Auth & Input Validation ---
-    if request.form.get('authentication') != AUTH_TOKEN:
-        return jsonify({"status": "error", "message": "Authentication failed."}), 401
+    # if request.form.get('authentication') != AUTH_TOKEN:
+    #     return jsonify({"status": "error", "message": "Authentication failed."}), 401
 
     product_id = request.form.get('productId')
     product_name = request.form.get('productName')
@@ -210,6 +210,8 @@ def upload_product_forecast():
             forecast = model.predict(future)
             forecasts[key] = build_forecast_response(forecast)
         except Exception as e:
+            print(f"Error processing {key}: {str(e)}")
+            traceback.print_exc()
             return jsonify({
                 "status": "error",
                 "message": f"Error processing {key}: {str(e)}"
@@ -243,6 +245,8 @@ def upload_product_forecast():
         if supply_val is not None and demand_val is not None and bulk_price_val is not None and supply_val != 0:
             bulk_fair_price = bulk_price_val + (alpha * ((demand_val - supply_val) / supply_val) * bulk_price_val)
     except Exception as e:
+        print(f"Error calculating fair price: {str(e)}")
+        traceback.print_exc()
         fair_price = None
         bulk_fair_price = None
 
@@ -266,6 +270,8 @@ def upload_product_forecast():
             "data": doc_data
         })
     except Exception as e:
+        print(f"Firestore error: {str(e)}")
+        traceback.print_exc()
         return jsonify({
             "status": "error",
             "message": f"Firestore error: {str(e)}"
