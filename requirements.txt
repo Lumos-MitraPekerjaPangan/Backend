@@ -1,11 +1,7 @@
-pandas
-numpy
-matplotlib
-prophet
-seaborn
-scikit-learn
 flask
+pandas
 joblib
-gunicorn
-python-dotenv
 firebase-admin
+python-dotenv
+prophet
+gunicorn

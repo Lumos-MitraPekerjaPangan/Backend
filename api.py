@@ -551,5 +551,6 @@ def update_all_models():
         }), 500
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
-    print("API is running on http://localhost:5000")
+    # Get port from environment variable (for Cloud Run compatibility)
+    port = int(os.getenv('PORT', 5000))
+    app.run(debug=False, host='0.0.0.0', port=port)
