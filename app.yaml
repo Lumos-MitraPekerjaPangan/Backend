@@ -1,0 +1,15 @@
+runtime: python312
+
+entrypoint: gunicorn --timeout 500 -b :$PORT api:app
+
+handlers:
+- url: /static
+  static_dir: static
+
+- url: /.*
+  script: auto
+
+env_variables:
+  authentication: 0AkvpaHdXSP4enx
+
+instance_class: F4_1G
