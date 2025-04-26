@@ -15,10 +15,27 @@ load_dotenv()
 AUTH_TOKEN = os.getenv('authentication')
 
 # Initialize Firebase Admin SDK
-cred = credentials.Certificate("hackfest-2025-7f1a4-firebase-adminsdk-fbsvc-a86f273b3e.json")
-firebase_admin.initialize_app(cred, {
-    'storageBucket': 'hackfest-2025-7f1a4.firebasestorage.app'
-})
+try:
+    # Try loading from credentials file first
+    cred = credentials.Certificate("hackfest-2025-7f1a4-firebase-adminsdk-fbsvc-a86f273b3e.json")
+    firebase_admin.initialize_app(cred, {
+        'storageBucket': 'hackfest-2025-7f1a4.firebasestorage.app'
+    })
+except Exception as e:
+    # If file not found, try loading from environment variable (for Cloud Run)
+    try:
+        firebase_creds_json = os.environ.get('FIREBASE_CREDENTIALS')
+        if firebase_creds_json:
+            cred_dict = json.loads(firebase_creds_json)
+            cred = credentials.Certificate(cred_dict)
+            firebase_admin.initialize_app(cred, {
+                'storageBucket': 'hackfest-2025-7f1a4.firebasestorage.app'
+            })
+        else:
+            print("Firebase credentials not found in environment variables")
+    except Exception as e:
+        print(f"Error initializing Firebase: {str(e)}")
+
 bucket = storage.bucket()
 
 app = Flask(__name__)
@@ -551,5 +568,9 @@ def update_all_models():
         }), 500
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
-    print("API is running on http://localhost:5000")
+    # Use the PORT environment variable for Cloud Run compatibility
+    port = int(os.environ.get('PORT', 8080))
+    # In production (Cloud Run), don't use debug mode
+    debug = os.environ.get('ENVIRONMENT', 'production').lower() == 'development'
+    app.run(debug=debug, host='0.0.0.0', port=port)
+    print(f"API is running on http://localhost:{port}")
